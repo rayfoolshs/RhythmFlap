@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f3f2ee" />
+    <title>Rhythm Flap — sight reading, but you can crash</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <main id="app">
+      <canvas id="stage" aria-label="Rhythm Flap play area"></canvas>
+
+      <div id="hud" class="hud hidden">
+        <div class="hud-left">
+          <div class="hud-score" id="score">0</div>
+          <div class="hud-combo" id="combo">x1</div>
+          <div class="hud-lives" id="lives">♥♥♥</div>
+        </div>
+        <div class="hud-right">
+          <div class="hud-bpm"><span id="bpm">80</span><small>BPM</small></div>
+          <div class="hud-best">BEST <span id="best">0</span></div>
+        </div>
+      </div>
+
+      <div id="hint" class="hint hidden">PRESS TO START</div>
+
+      <div id="metro-bar" class="metro-bar hidden">
+        <span class="metro-title">Metronome</span>
+        <label class="select-mini" for="metro-sound">
+          <select id="metro-sound" aria-label="Metronome sound">
+            <option value="click">Click</option>
+            <option value="beep">Beep</option>
+            <option value="wood">Wood</option>
+            <option value="digital">Digital</option>
+          </select>
+        </label>
+        <label class="switch" for="accent-toggle">
+          <input id="accent-toggle" type="checkbox" checked />
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+          Accent
+        </label>
+        <label class="select-mini" for="subdivision-mode">
+          <select id="subdivision-mode" aria-label="Metronome subdivision">
+            <option value="off">No subdivision</option>
+            <option value="8">8ths</option>
+            <option value="3">Triplets</option>
+            <option value="16">16ths</option>
+          </select>
+        </label>
+        <label class="switch" for="count-toggle">
+          <input id="count-toggle" type="checkbox" />
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+          Count
+        </label>
+        <label class="mini" for="play-tempo">
+          <strong id="play-tempo-value">80</strong> BPM
+          <input id="play-tempo" type="range" min="60" max="180" step="1" value="80" />
+        </label>
+        <label class="mini" for="play-volume">
+          <strong id="play-volume-value">60</strong>%
+          <input id="play-volume" type="range" min="0" max="100" step="1" value="60" />
+        </label>
+      </div>
+
+      <div id="count-card" class="hidden"></div>
+
+      <section id="menu" class="overlay">
+        <div class="panel">
+          <header class="brand">
+            <h1>RHYTHM<span>FLAP</span></h1>
+            <p>Tap every note as it crosses the line.</p>
+            <p class="credit">
+              Created by
+              <a href="https://www.rayfooproductions.com" target="_blank" rel="noreferrer">Ray Foo</a>
+              ·
+              <a href="https://www.rayfooproductions.com" target="_blank" rel="noreferrer">www.rayfooproductions.com</a>
+            </p>
+          </header>
+
+          <div class="tiers" id="tiers" role="listbox" aria-label="Starting tier"></div>
+
+          <div class="menu-actions">
+            <span class="seed">seed <code id="seed">—</code></span>
+          </div>
+
+          <footer class="keys">
+            <span><kbd>Space</kbd> / tap on the beat</span>
+            <span>hold for long notes, release at rests</span>
+            <span><kbd>1</kbd>–<kbd>9</kbd> pick tier</span>
+            <span><kbd>P</kbd> pause</span>
+          </footer>
+        </div>
+      </section>
+
+      <section id="crash" class="overlay hidden">
+        <div class="panel result">
+          <h2 id="crash-title">RUN COMPLETE</h2>
+          <div class="final" id="final-score">0</div>
+          <div class="result-grid">
+            <div><span id="r-acc">100</span><small>accuracy %</small></div>
+            <div><span id="r-gates">0</span><small>notes</small></div>
+            <div><span id="r-combo">0</span><small>best combo</small></div>
+            <div><span id="r-bpm">80</span><small>top bpm</small></div>
+          </div>
+          <p class="best-line">Best <span id="r-best">0</span></p>
+          <p class="retry">Tap or press <kbd>Space</kbd> to retry this course</p>
+          <p class="newcourse"><kbd>R</kbd> for a new course · <kbd>Esc</kbd> for tiers</p>
+        </div>
+      </section>
+
+      <section id="pause" class="overlay hidden">
+        <div class="panel result">
+          <h2>PAUSED</h2>
+          <div class="slider-row pause-row">
+            <label for="pause-tempo">Metronome <strong id="pause-tempo-value">80</strong> BPM</label>
+            <input id="pause-tempo" type="range" min="60" max="180" step="1" value="80" />
+          </div>
+          <div class="slider-row pause-row">
+            <label for="pause-volume">Volume <strong id="pause-volume-value">60</strong>%</label>
+            <input id="pause-volume" type="range" min="0" max="100" step="1" value="60" />
+          </div>
+          <button id="resume" type="button" class="ghost resume">Resume</button>
+          <p class="retry">Press <kbd>P</kbd> to resume</p>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
