@@ -57,6 +57,9 @@ merges adjacent notes into ties (probability 0.3, total ≤ 2 beats). A course i
 - Rests split the same way but are never tied.
 - `beamGroups()` beams adjacent eighths within a **half-bar** (up to four per
   beam) and breaks at rests, longer values, ties and bar lines.
+- `stemDirection()` points stems down on and above the middle line (B4) and up
+  below it. A beam is one stroke, so `groupStemDirection()` gives the whole group
+  the direction of its note farthest from the middle line.
 
 ## Score renderer (`score.ts`)
 
@@ -80,7 +83,14 @@ bar canvases are clipped at x=134 so they disappear behind the clef.
 
 ## Bird and input
 
-- The bird glides toward the next note's pitch (`staffY(step)`), easing at 9/s.
+- The bird hops between perches: it holds the pitch of the note it last played,
+  leaps, and touches down on the next note's perch exactly on that note's beat.
+  Hang time is 60 % of the gap, clamped to 0.35–1 beat, and the arc peaks 22 px
+  above the higher perch.
+- Perches live in a **flight band above the staff** (`birdPerchY(step)`): the
+  lowest perch clears the top line by 8 px and the band climbs 32 px for the top
+  note, so the bird never covers the notation. `bird.y` is the feet.
+- The hit ring flashes on the notehead just struck (`lastStep`), not on the bird.
 - Key/pointer down calls `Game.press()`; up calls `Game.release()`.
 - Timing windows: **PERFECT ≤ 80 ms**, **GOOD ≤ 150 ms**, **OK ≤ 280 ms**;
   outside that is a miss. Bad taps are misses.
@@ -108,9 +118,17 @@ bar canvases are clipped at x=134 so they disappear behind the clef.
   start a sustained tone that stops on release.
 - Metronome clicks are scheduled with a 150 ms lookahead against the audio clock.
 
-## Settings and storage
+## Theme
 
-`localStorage` keys:
+The palette is the Lakeland one from *Rhythm Quiz* (navy / green / lime), documented
+with hex values in `README.md`. It lives in two places:
+
+- The `:root` block of `src/styles.css` — every HTML surface reads these tokens.
+- Canvas constants in `src/game/render.ts`, with notation ink in `notation.ts` and
+  `score.ts` — a 2D context cannot read CSS variables, so those hexes are repeated
+  and must be changed together.
+
+## Settings and storage
 
 - `rhythmFlap.v2` — best score per tier and last tier.
 - `rhythmFlap.settings.v1` — tempo override, metronome volume, count toggle,

@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+
+### Game
+
+- The bird now flies in a **band above the staff** and hops from note to note,
+  landing on each note's perch exactly on its beat instead of gliding to the next
+  pitch. The band clears the top line, so the bird never covers the notation;
+  the card is taller to give it room, judgment text sits under the stave, and the
+  hit ring flashes on the notehead that was struck.
+
+### Notation
+
+- Stems point down on and above the B line and up below it; beamed groups take
+  the direction of their note farthest from the middle line.
+
+### Theme
+
+- The app now wears the Lakeland palette from *Rhythm Quiz*: ink `#161226`
+  notation and text, navy `#202b64` for the hit line, bar numbers and primary UI,
+  lime `#c1d52d` 4 px rule on the panel and the playfield card, `#c9c6dd` staff
+  lines, and `good`/`teal`/`bad` feedback colours.
+- Page, card, borders, scrim, shadows and the combo accent follow the same
+  palette; no web fonts were added.
+
 ## 0.1.0 — 2026-11-07
 
 First playable release.

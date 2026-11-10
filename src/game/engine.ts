@@ -1,5 +1,5 @@
 import { frequencyForStep, type Sound } from "./audio";
-import { generateCourse, PX_PER_BEAT, PRE_ROLL_BEATS, staffY } from "./layout";
+import { birdPerchY, generateCourse, PX_PER_BEAT, PRE_ROLL_BEATS } from "./layout";
 import { engrave, type EngravedNote } from "./rhythm";
 import { TIMING, timingGrade, timingScore } from "./scoring";
 import { WORLD } from "./world";
@@ -22,7 +22,20 @@ const RAMP_EVERY = 8;
 const MAX_BPM = 184;
 const CLICK_LOOKAHEAD = 0.15;
 const POPUP_LIFE = 0.7;
-const GLIDE = 9;
+/**
+ * The bird hops between notes instead of gliding: it leaves the note it last
+ * played, arcs over the staff, and touches down on the next notehead exactly on
+ * that note's beat.
+ */
+const HOP = {
+  /** Share of the gap between two notes spent in the air. */
+  airShare: 0.6,
+  /** Floor and ceiling for the hang time, so fast notes still hop and long gaps do not float. */
+  minAirBeats: 0.35,
+  maxAirBeats: 1,
+  /** Peak of the arc, in px above the two noteheads. */
+  lift: 22,
+};
 /** How far behind the hit line a note may drift before it is counted as missed. */
 const LATE_WINDOW = TIMING.ok;
 /** Notes longer than an eighth are sustained: press and hold for their value. */
@@ -37,7 +50,6 @@ export interface Popup {
   text: string;
   kind: Grade | "MISS" | "HELD";
   x: number;
-  y: number;
   life: number;
 }
 
@@ -50,8 +62,9 @@ export interface GameOptions {
 }
 
 /**
- * Timing game, not a flight game: the bird rides the hit line and glides to the
- * pitch of the next note by itself. The only input is tapping in time.
+ * Timing game, not a flight game: the bird perches above the hit line and hops
+ * from note to note, landing on each notehead on its beat. The only input is
+ * tapping in time.
  */
 export class Game {
   readonly tier: Tier;
@@ -60,7 +73,7 @@ export class Game {
   phase: Phase = "ready";
   beatsElapsed = 0;
   bpm: number;
-  bird: BirdState = { y: staffY(4), vy: 0 };
+  bird: BirdState = { y: birdPerchY(4), vy: 0 };
   score = 0;
   combo = 0;
   bestCombo = 0;
@@ -68,6 +81,8 @@ export class Game {
   misses = 0;
   flash = 0;
   shake = 0;
+  /** Step of the note last struck, so the hit ring can flash on that notehead. */
+  lastStep = 4;
   popups: Popup[] = [];
 
   readonly notes: NoteEvent[];
@@ -78,10 +93,13 @@ export class Game {
   onEnd?: () => void;
 
   private readonly sound: Sound;
+  private readonly landings: NoteEvent[];
+  /** Index into `landings` of the note the bird is hopping toward. */
+  private hopTo = 0;
   private accumulator = 0;
   private nextClickBeat = 0;
   private nextRamp = RAMP_EVERY;
-  private hold: { endBeat: number; step: number } | null = null;
+  private hold: { endBeat: number } | null = null;
   private spaceDown = false;
   private restPenalized = false;
   private subdivisionSteps = 0;
@@ -93,6 +111,7 @@ export class Game {
     this.bpm = startBpm ?? tier.startBpm;
     this.notes = generateCourse(tier, seed);
     this.engraved = engrave(this.notes);
+    this.landings = this.notes.filter((note) => !note.rest);
   }
 
   start(): void {
@@ -101,7 +120,8 @@ export class Game {
     this.beatsElapsed = 0;
     this.accumulator = 0;
     this.nextClickBeat = 0;
-    this.bird = { y: staffY(4), vy: 0 };
+    this.bird = { y: birdPerchY(4), vy: 0 };
+    this.hopTo = 0;
     this.hold = null;
     this.spaceDown = false;
     this.restPenalized = false;
@@ -136,7 +156,7 @@ export class Game {
       if (grade !== "MISS") {
         this.registerHit(target, grade);
         if (target.beats > HOLD_MIN_BEATS) {
-          this.hold = { endBeat: target.beat + target.beats, step: target.step };
+          this.hold = { endBeat: target.beat + target.beats };
         }
         return;
       }
@@ -155,7 +175,7 @@ export class Game {
       return;
     }
 
-    const { endBeat, step } = this.hold;
+    const { endBeat } = this.hold;
     const remaining = ((endBeat - this.beatsElapsed) * 60) / this.bpm;
     this.hold = null;
     this.sound.stopNote();
@@ -170,7 +190,6 @@ export class Game {
       text: "HELD",
       kind: "HELD",
       x: WORLD.birdX,
-      y: staffY(step),
       life: POPUP_LIFE,
     });
   }
@@ -237,7 +256,7 @@ export class Game {
     this.checkHold();
     this.checkRest();
     if (this.phase !== "running") return;
-    this.glideBird(dt);
+    this.hopBird(dt);
   }
 
   /** A hold that reaches its end without a release is complete; the key is still down. */
@@ -293,22 +312,46 @@ export class Game {
     }
   }
 
-  private nextNote(): NoteEvent | undefined {
-    for (const note of this.notes) {
-      if (note.rest || this.hitIds.has(note.id) || this.missedIds.has(note.id)) continue;
-      if (note.beat < this.beatsElapsed - 0.5) continue;
-      return note;
+  /**
+   * Hop from note to note. The bird holds the pitch of the note it last played,
+   * leaps, and touches down on the next note's perch on that note's beat, so the
+   * touchdown and the note reaching the hit line are the same instant. The perch
+   * band sits above the staff, so the bird never covers the notation.
+   */
+  private hopBird(dt: number): void {
+    while (
+      this.hopTo < this.landings.length &&
+      this.landings[this.hopTo].beat <= this.beatsElapsed
+    ) {
+      this.hopTo += 1;
     }
-    return undefined;
-  }
 
-  private glideBird(dt: number): void {
-    const next = this.nextNote();
-    const targetY = next ? staffY(next.step) : staffY(4);
-    const dy = targetY - this.bird.y;
-    const ease = 1 - Math.exp(-GLIDE * dt);
-    this.bird.y += dy * ease;
-    this.bird.vy = dy * GLIDE;
+    const to = this.landings[this.hopTo];
+    const from = this.landings[this.hopTo - 1];
+    // Before the first note the bird waits over the middle of the band.
+    const fromY = from ? birdPerchY(from.step) : birdPerchY(4);
+    const fromBeat = from ? from.beat : to ? to.beat - 2 : this.beatsElapsed;
+
+    let y = fromY;
+    if (to) {
+      const air = Math.min(
+        HOP.maxAirBeats,
+        Math.max(HOP.minAirBeats, (to.beat - fromBeat) * HOP.airShare),
+      );
+      const takeoff = to.beat - air;
+      if (this.beatsElapsed > takeoff) {
+        const p = Math.min(1, (this.beatsElapsed - takeoff) / air);
+        // Weight the pitch change, then lift the midpoint so the path is a hop.
+        const ease = p * p * (3 - 2 * p);
+        y =
+          fromY +
+          (birdPerchY(to.step) - fromY) * ease -
+          Math.sin(Math.PI * p) * HOP.lift;
+      }
+    }
+
+    this.bird.vy = dt > 0 ? (y - this.bird.y) / dt : 0;
+    this.bird.y = y;
   }
 
   private registerHit(note: NoteEvent, grade: Grade): void {
@@ -319,12 +362,12 @@ export class Game {
     this.combo += 1;
     this.bestCombo = Math.max(this.bestCombo, this.combo);
     this.flash = 0.24;
+    this.lastStep = note.step;
 
     this.popups.push({
       text: grade,
       kind: grade,
       x: WORLD.birdX,
-      y: staffY(note.step),
       life: POPUP_LIFE,
     });
 
@@ -350,7 +393,6 @@ export class Game {
       text,
       kind: "MISS",
       x: WORLD.birdX,
-      y: this.bird.y,
       life: POPUP_LIFE,
     });
     this.sound.miss();

@@ -10,16 +10,16 @@ npm run build     # tsc --noEmit + Vite production build
 
 ## Automated coverage
 
-53 tests across six files:
+57 tests across six files:
 
 | File | Covers |
 | --- | --- |
 | `tests/rng.test.ts` | seed hashing, determinism, range, slug-safe seeds, pick/randInt |
 | `tests/layout.test.ts` | 4-beat bars, allowed durations/rests, tie rules, reproducibility, pitch bounds, staff mapping, ordering |
-| `tests/rhythm.test.ts` | off-beat splitting, tie flags, rest splitting, on-beat values kept, half-bar beaming, rest/long-note breaks |
+| `tests/rhythm.test.ts` | off-beat splitting, tie flags, rest splitting, on-beat values kept, half-bar beaming, rest/long-note breaks, stem direction, beamed-group stems |
 | `tests/notation.test.ts` | duration → note value, filled/hollow, dotted, stemmed |
 | `tests/scoring.test.ts` | timing windows, early/late symmetry, combo multiplier, points |
-| `tests/engine.test.ts` | start, custom tempo, deterministic courses, hit windows, no double hits, misses, rests, holds (clean/early), rest-hold penalty, tempo ramp, glide, pause, accuracy, eight-bar finish |
+| `tests/engine.test.ts` | start, custom tempo, deterministic courses, hit windows, no double hits, misses, rests, holds (clean/early), rest-hold penalty, tempo ramp, hop landing, hop arc, pause, accuracy, eight-bar finish |
 
 The engine tests use a `Sound` stub; audio output itself is not unit-tested.
 
@@ -45,6 +45,13 @@ Run `npm run dev` and check:
 8. **Seeded link** — `?tier=8&seed=…&share=1` starts that course.
 9. **Touch** — pointer down/up holds work on a touch device; sliders are usable.
 10. **Visibility** — switching tabs pauses the run and shows the pause panel.
+11. **Bird** — it flies in the band above the staff, never over the notation;
+    each hop lands on the next note's perch as that note crosses the line; the
+    hit ring flashes on the notehead.
+12. **Stems** — notes on and above the B line stem down, below it stem up, and a
+    beamed group follows its note farthest from the middle line.
+13. **Theme** — menu, HUD, metronome bar, playfield card and notation use the
+    Lakeland palette (lime rules, navy accents, `#C9C6DD` staff lines).
 
 ## Gaps
 

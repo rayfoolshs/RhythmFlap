@@ -111,3 +111,41 @@ library.
 
 **Consequences.** Small UI code and no framework overhead; screens are managed by
 explicit show/hide helpers in `main.ts`.
+
+## 11. The bird flies in a band above the staff
+
+**Context.** A bird that stands on each notehead covers the very notation the
+player is reading, especially for low notes.
+
+**Decision.** Map each note's staff step onto `birdPerchY(step)` — a compressed
+band that clears the top line by 8 px and climbs 32 px for the top note. The hop
+still lands on the note's perch exactly on its beat.
+
+**Consequences.** The notation stays clear and the timing cue is unchanged, but
+the bird no longer touches the note, so pitch is read from the score rather than
+the bird's height. The card grew to 132–412 to give the band room.
+
+## 12. Stem direction from the middle line, one per beam
+
+**Context.** VexFlow's default left every stem pointing up, which reads wrong
+above the B line.
+
+**Decision.** `stemDirection(step)` points stems down on and above the middle line
+and up below it. Because a beam is one stroke, `groupStemDirection()` gives every
+note in a beamed group the direction of the note farthest from the middle line.
+
+**Consequences.** Conventional-looking 4/4. Mixed-direction groups are impossible
+by design, which matches engraving practice.
+
+## 13. Lakeland palette in CSS tokens and canvas constants
+
+**Context.** The department's *Rhythm Quiz* has a documented Lakeland palette, and
+this game should sit alongside it.
+
+**Decision.** Mirror the palette in the `:root` block of `styles.css` for HTML,
+and repeat the hexes as constants in `render.ts`, `notation.ts` and `score.ts`
+for the canvas, which cannot read CSS variables.
+
+**Consequences.** One palette, two homes: a colour change means editing both. The
+duplication is deliberate and small (a dozen values) rather than a runtime lookup
+of computed styles, which would break if the canvas renders before CSS loads.

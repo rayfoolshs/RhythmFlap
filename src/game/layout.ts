@@ -18,6 +18,23 @@ export function staffY(step: number): number {
   return STAFF.baseY - step * STAFF.stepPx;
 }
 
+/**
+ * The bird flies in the space above the staff so it never covers the notation:
+ * its lowest perch clears the top line, and higher notes perch higher.
+ */
+export const FLIGHT = {
+  /** Gap between the lowest perch and the top line. */
+  clearance: 8,
+  /** How far the perch climbs for the top note. */
+  band: 32,
+};
+
+/** Perch height — where the bird's feet sit — for a staff step. */
+export function birdPerchY(step: number): number {
+  const clamped = Math.max(0, Math.min(MAX_STEP, step));
+  return staffY(MAX_STEP) - FLIGHT.clearance - (clamped / MAX_STEP) * FLIGHT.band;
+}
+
 function chooseDuration(tier: Tier, remaining: number, beat: number, rng: Rng): number {
   let values = tier.values.filter((value) => value <= remaining + 1e-6);
   if (values.length === 0) return remaining;

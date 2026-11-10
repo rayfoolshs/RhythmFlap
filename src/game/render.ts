@@ -1,12 +1,21 @@
 import type { Game } from "./engine";
-import { PX_PER_BEAT, PRE_ROLL_BEATS, staffY } from "./layout";
+import { birdPerchY, PX_PER_BEAT, PRE_ROLL_BEATS, staffY } from "./layout";
 import { drawNotation } from "./notation";
 import { WORLD } from "./world";
 import type { BirdState } from "./types";
 
-const PAPER = "#f3f2ee";
-const INK = "#1e293b";
-const ORANGE = "#f97316";
+/** Lakeland palette — keep in step with THEME.md and src/styles.css. */
+const PAGE = "#f5f6fa";
+const CARD_FILL = "#ffffff";
+const INK = "#161226";
+const MUTED = "#6b6f80";
+const BRAND = "#202b64";
+const BRAND2 = "#3d4a94";
+const LIME = "#c1d52d";
+const GOOD = "#15915b";
+const BAD = "#c23b52";
+const TEAL = "#0d9488";
+const STAFF = "#c9c6dd";
 
 export function drawWorld(
   ctx: CanvasRenderingContext2D,
@@ -15,7 +24,7 @@ export function drawWorld(
   counts: boolean,
 ): void {
   ctx.save();
-  ctx.fillStyle = PAPER;
+  ctx.fillStyle = PAGE;
   ctx.fillRect(0, 0, WORLD.width, WORLD.height);
 
   drawCard(ctx);
@@ -37,7 +46,7 @@ export function drawWorld(
     drawBarLines(ctx, game, time);
     drawNotation(ctx, game, counts);
     const bob = game.phase === "ready" ? Math.sin(time * 3) * 5 : 0;
-    drawBird(ctx, game.bird, bob, game.phase === "crashed", game.flash);
+    drawBird(ctx, game.bird, bob, game.phase === "crashed", game.flash, game.lastStep);
     drawPopups(ctx, game);
   } else {
     drawBarLines(ctx, null, time);
@@ -48,7 +57,7 @@ export function drawWorld(
   ctx.restore();
 }
 
-const CARD = { x: 12, y: 176, width: 936, height: 212, radius: 18 };
+const CARD = { x: 12, y: 132, width: 936, height: 280, radius: 18 };
 
 function cardPath(ctx: CanvasRenderingContext2D): void {
   const { x, y, width, height, radius } = CARD;
@@ -67,22 +76,30 @@ function cardPath(ctx: CanvasRenderingContext2D): void {
 
 function drawCard(ctx: CanvasRenderingContext2D): void {
   ctx.save();
-  ctx.shadowColor = "rgba(30, 41, 59, 0.14)";
-  ctx.shadowBlur = 22;
-  ctx.shadowOffsetY = 10;
-  ctx.fillStyle = "#fffdf8";
+  ctx.shadowColor = "rgba(20, 10, 60, 0.16)";
+  ctx.shadowBlur = 26;
+  ctx.shadowOffsetY = 12;
+  ctx.fillStyle = CARD_FILL;
   cardPath(ctx);
   ctx.fill();
   ctx.restore();
 
-  ctx.strokeStyle = "rgba(30, 41, 59, 0.08)";
+  ctx.strokeStyle = "rgba(22, 18, 38, 0.10)";
   ctx.lineWidth = 1;
   cardPath(ctx);
   ctx.stroke();
+
+  // The 4 px lime rule that runs under the quiz header.
+  ctx.save();
+  cardPath(ctx);
+  ctx.clip();
+  ctx.fillStyle = LIME;
+  ctx.fillRect(CARD.x, CARD.y, CARD.width, 4);
+  ctx.restore();
 }
 
 function drawStaff(ctx: CanvasRenderingContext2D): void {
-  ctx.strokeStyle = "rgba(30, 41, 59, 0.42)";
+  ctx.strokeStyle = STAFF;
   ctx.lineWidth = 1.2;
   for (let step = 0; step <= 8; step += 2) {
     const y = staffY(step);
@@ -92,7 +109,7 @@ function drawStaff(ctx: CanvasRenderingContext2D): void {
     ctx.stroke();
   }
 
-  ctx.strokeStyle = "rgba(249, 115, 22, 0.1)";
+  ctx.strokeStyle = "rgba(61, 74, 148, 0.12)";
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(0, staffY(4));
@@ -103,17 +120,17 @@ function drawStaff(ctx: CanvasRenderingContext2D): void {
 /** The line the bird rides: notes are tapped as they cross it. */
 function drawHitLine(ctx: CanvasRenderingContext2D, game: Game | null): void {
   const x = WORLD.birdX;
-  const strength = game?.phase === "running" ? 0.4 : 0.22;
+  const strength = game?.phase === "running" ? 0.5 : 0.28;
 
   ctx.save();
-  ctx.strokeStyle = `rgba(249, 115, 22, ${strength})`;
+  ctx.strokeStyle = `rgba(32, 43, 100, ${strength})`;
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(x, staffY(8) - 22);
   ctx.lineTo(x, staffY(0) + 22);
   ctx.stroke();
 
-  ctx.fillStyle = `rgba(249, 115, 22, ${strength})`;
+  ctx.fillStyle = `rgba(32, 43, 100, ${strength})`;
   ctx.beginPath();
   ctx.moveTo(x - 5, staffY(8) - 22);
   ctx.lineTo(x + 5, staffY(8) - 22);
@@ -152,7 +169,7 @@ function drawBarLines(
     const x = WORLD.birdX + (beat - beatsElapsed) * PX_PER_BEAT;
     if (x < -20 || x > WORLD.width + 20) continue;
 
-    ctx.strokeStyle = "rgba(30, 41, 59, 0.5)";
+    ctx.strokeStyle = "rgba(22, 18, 38, 0.45)";
     ctx.lineWidth = 1.8;
     ctx.beginPath();
     ctx.moveTo(x, top);
@@ -160,7 +177,7 @@ function drawBarLines(
     ctx.stroke();
 
     if (x > 60 && x < WORLD.width - 10) {
-      ctx.fillStyle = "rgba(30, 41, 59, 0.45)";
+      ctx.fillStyle = BRAND;
       ctx.fillText(String(bar + 1), x, top - 12);
     }
   }
@@ -168,32 +185,38 @@ function drawBarLines(
   ctx.restore();
 }
 
+/** Local y of the feet in `birdPath` space: the bird's lowest point. */
+const FEET = 51;
+
 function drawBird(
   ctx: CanvasRenderingContext2D,
   bird: BirdState,
   bob: number,
   crashed: boolean,
   flash: number,
+  ringStep: number,
 ): void {
-  const scale = 0.9;
-  const headX = WORLD.birdX - 28;
-  const headY = bird.y + bob;
-  const angle = crashed ? 0.45 : Math.max(-0.16, Math.min(0.16, bird.vy / 7000));
+  const scale = 0.72;
+  // `bird.y` is the perch point: the feet, which ride the flight band above the
+  // staff so the body never covers the notation.
+  const perchX = WORLD.birdX + 4;
+  const perchY = bird.y + bob;
+  const angle = crashed ? 0.45 : Math.max(-0.18, Math.min(0.18, bird.vy / 1200));
 
-  // Hit ring.
+  // Hit ring, around the notehead that was just struck.
   if (flash > 0) {
     const progress = 1 - flash / 0.24;
     ctx.save();
-    ctx.strokeStyle = `rgba(249, 115, 22, ${0.55 * (1 - progress)})`;
+    ctx.strokeStyle = `rgba(21, 145, 91, ${0.55 * (1 - progress)})`;
     ctx.lineWidth = 2.5;
     ctx.beginPath();
-    ctx.arc(headX + 12, headY + 12, 18 + progress * 18, 0, Math.PI * 2);
+    ctx.arc(WORLD.birdX + 9, staffY(ringStep), 13 + progress * 16, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
   }
 
   ctx.save();
-  ctx.translate(headX, headY);
+  ctx.translate(perchX, perchY - FEET * scale);
   ctx.rotate(angle);
   ctx.scale(scale, scale);
   ctx.lineJoin = "round";
@@ -265,19 +288,20 @@ function drawPopups(ctx: CanvasRenderingContext2D, game: Game): void {
   for (const popup of game.popups) {
     const progress = 1 - popup.life / 0.7;
     const alpha = Math.min(1, popup.life * 3);
-    const y = popup.y - 40 - progress * 24;
+    // Under the stave, clear of both the notation and the bird's flight band.
+    const y = staffY(0) + 56 - progress * 12;
 
     ctx.globalAlpha = alpha;
     ctx.fillStyle =
       popup.kind === "PERFECT"
-        ? ORANGE
+        ? GOOD
         : popup.kind === "HELD"
-          ? "#16a34a"
+          ? TEAL
           : popup.kind === "GOOD"
-            ? "#475569"
+            ? BRAND2
             : popup.kind === "MISS"
-              ? "#dc2626"
-              : "#94a3b8";
+              ? BAD
+              : MUTED;
 
     ctx.fillText(popup.text, popup.x, y);
   }
@@ -301,7 +325,15 @@ function drawMenuScene(ctx: CanvasRenderingContext2D, time: number): void {
 
   ctx.save();
   ctx.globalAlpha = 0.9;
-  drawBird(ctx, { y: 300 + Math.sin(time * 2.2) * 6, vy: 0 }, 0, false, 0);
+  // `y` is the perch point, so keep the menu bird in the flight band.
+  drawBird(
+    ctx,
+    { y: birdPerchY(4) + Math.sin(time * 2.2) * 6, vy: 0 },
+    0,
+    false,
+    0,
+    4,
+  );
   ctx.restore();
 }
 
@@ -310,12 +342,12 @@ function drawMenuNote(ctx: CanvasRenderingContext2D, x: number, y: number): void
   ctx.translate(x, y);
   ctx.rotate(-0.22);
 
-  ctx.fillStyle = "rgba(30, 41, 59, 0.5)";
+  ctx.fillStyle = "rgba(22, 18, 38, 0.45)";
   ctx.beginPath();
   ctx.ellipse(0, 0, 9.5, 7, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.strokeStyle = "rgba(30, 41, 59, 0.5)";
+  ctx.strokeStyle = "rgba(22, 18, 38, 0.45)";
   ctx.lineWidth = 2.5;
   ctx.beginPath();
   ctx.moveTo(8, -3);
@@ -351,7 +383,7 @@ export function render(
   const offsetY = ((cssHeight - WORLD.height * scale) / 2) * dpr;
 
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.fillStyle = "#e9e7e0";
+  ctx.fillStyle = "#eef1f9";
   ctx.fillRect(0, 0, pixelWidth, pixelHeight);
 
   ctx.setTransform(dpr * scale, 0, 0, dpr * scale, offsetX, offsetY);

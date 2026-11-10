@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { beamGroups, engrave } from "../src/game/rhythm";
+import {
+  beamGroups,
+  engrave,
+  groupStemDirection,
+  stemDirection,
+  STEM_DOWN,
+  STEM_UP,
+} from "../src/game/rhythm";
 import type { NoteEvent } from "../src/game/types";
 
 let nextId = 1;
@@ -134,5 +141,35 @@ describe("beaming", () => {
 
     expect(groups).toHaveLength(1);
     expect(groups[0].map((n) => n.beat)).toEqual([0.5, 1, 1.5]);
+  });
+});
+
+describe("stem direction", () => {
+  it("points stems down from the B line upward", () => {
+    // Steps 0-8 run E4 to F5; step 4 is the middle line, B4.
+    expect([0, 1, 2, 3].map(stemDirection)).toEqual([1, 1, 1, 1]);
+    expect([4, 5, 6, 7, 8].map(stemDirection)).toEqual([-1, -1, -1, -1, -1]);
+  });
+
+  it("gives a beamed group the direction of its farthest note", () => {
+    const below = engrave([
+      note({ step: 1, beat: 0, beats: 0.5 }),
+      note({ step: 3, beat: 0.5, beats: 0.5 }),
+    ]);
+    expect(groupStemDirection(below)).toBe(STEM_UP);
+
+    const above = engrave([
+      note({ step: 3, beat: 0, beats: 0.5 }),
+      note({ step: 6, beat: 0.5, beats: 0.5 }),
+    ]);
+    expect(groupStemDirection(above)).toBe(STEM_DOWN);
+  });
+
+  it("stems a group sitting on the middle line downwards", () => {
+    const middle = engrave([
+      note({ step: 4, beat: 0, beats: 0.5 }),
+      note({ step: 4, beat: 0.5, beats: 0.5 }),
+    ]);
+    expect(groupStemDirection(middle)).toBe(STEM_DOWN);
   });
 });

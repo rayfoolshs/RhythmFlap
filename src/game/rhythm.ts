@@ -114,3 +114,27 @@ export function beamGroups(notes: EngravedNote[]): EngravedNote[][] {
   flush();
   return groups;
 }
+
+/** Staff step of the middle line, B4: stems fall from here upward. */
+export const MIDDLE_LINE = 4;
+export const STEM_UP = 1;
+export const STEM_DOWN = -1;
+
+/** Stems point down on and above the B line, and up below it. */
+export function stemDirection(step: number): number {
+  return step >= MIDDLE_LINE ? STEM_DOWN : STEM_UP;
+}
+
+/**
+ * A beam is one stroke, so its notes share a stem direction: the note farthest
+ * from the middle line decides.
+ */
+export function groupStemDirection(notes: EngravedNote[]): number {
+  let decisive = notes[0];
+  for (const note of notes) {
+    if (Math.abs(note.step - MIDDLE_LINE) > Math.abs(decisive.step - MIDDLE_LINE)) {
+      decisive = note;
+    }
+  }
+  return stemDirection(decisive.step);
+}

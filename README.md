@@ -1,7 +1,8 @@
 # Rhythm Flap
 
-A one-button sight-reading game. The staff is the playfield, the bird pecks each
-note as it crosses the line, and the only input is tapping (and holding) in time.
+A one-button sight-reading game. The staff is the playfield, a bird flies above
+it and lands on each note as it crosses the line, and the only input is tapping
+(and holding) in time.
 
 Created by **Ray Foo** · [www.rayfooproductions.com](https://www.rayfooproductions.com)
 
@@ -12,7 +13,7 @@ Created by **Ray Foo** · [www.rayfooproductions.com](https://www.rayfooproducti
 ```bash
 npm install
 npm run dev      # http://localhost:5173
-npm test         # 53 Vitest tests
+npm test         # 57 Vitest tests
 npm run build    # type-check + production build in dist/
 npm run preview  # serve the production build
 ```
@@ -31,8 +32,9 @@ npm run preview  # serve the production build
 
 ## How it plays
 
-- Notes scroll right-to-left at the current tempo. The bird rides the hit line
-  and glides to the pitch of the next note by itself — you never control height.
+- Notes scroll right-to-left at the current tempo. The bird flies in a band above
+  the staff and hops from note to note, touching down on each note's perch exactly
+  on its beat — you never control height, and the notation stays clear.
 - Tap as the note crosses the line. Timing windows: **PERFECT ≤ 80 ms**,
   **GOOD ≤ 150 ms**, **OK ≤ 280 ms**; anything else, or an untouched note, is a
   **MISS**.
@@ -56,6 +58,8 @@ OpenSheetMusicDisplay uses — while staying pinned to the beat grid:
   the same way. On-beat dotted values keep their written form.
 - Eighths are beamed in **half-bar groups** in 4/4; rests, longer values, ties and
   bar lines break the beam.
+- Stems point **down on and above the B line** and up below it; a beam takes the
+  direction of its note farthest from the middle line.
 - Treble clef and 4/4 at the system start, a bar line and number per measure, and
   a hit line at the bird.
 - The **Count** switch draws the counting under the notes, beneath the stave:
@@ -77,6 +81,31 @@ The bar at the bottom of every exercise carries:
 
 The pause panel repeats tempo and volume. All settings persist, and the
 metronome volume never affects note, miss or crash sounds.
+
+## Theme
+
+The palette is the **Lakeland Senior High School** one (navy / green / lime) from
+the *Rhythm Quiz — Complete the Bar* design reference. Values live in two places,
+because canvas code cannot read CSS variables:
+
+- `src/styles.css` — the `:root` tokens the HTML UI uses.
+- `src/game/render.ts`, `notation.ts`, `score.ts` — the same hexes as canvas
+  constants (card, staff, notation ink, feedback).
+
+| Role | Hex |
+| --- | --- |
+| Text and notation ink | `#161226` |
+| Page / card | `#f5f6fa` / `#ffffff` |
+| Muted text | `#6b6f80` |
+| Borders | `#e2e5ee` |
+| Brand navy — hit line, bar numbers, primary UI | `#202b64` |
+| Brand navy light — secondary, off-beat counts | `#3d4a94` |
+| Logo green / lime rule | `#0a8440` / `#c1d52d` |
+| Staff lines | `#c9c6dd` |
+| PERFECT / HELD / MISS | `#15915b` / `#0d9488` / `#c23b52` |
+
+No web fonts: the UI uses the platform UI stack and the notation uses the bundled
+Bravura font, so the app still runs offline.
 
 ## Starting tiers
 

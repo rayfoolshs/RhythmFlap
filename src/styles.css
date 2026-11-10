@@ -1,13 +1,27 @@
 :root {
-  --paper: #f3f2ee;
-  --paper-deep: #e9e7e0;
-  --ink: #1e293b;
-  --ink-soft: #64748b;
-  --ink-faint: #94a3b8;
-  --orange: #f97316;
-  --orange-deep: #c2410c;
+  /* Lakeland palette, shared with Rhythm Quiz — see THEME.md. */
+  --ink: #161226;
+  --muted: #6b6f80;
+  --line: #e2e5ee;
+  --bg: #f5f6fa;
+  --card: #ffffff;
+  --brand: #202b64;
+  --brand2: #3d4a94;
+  --green: #0a8440;
+  --lime: #c1d52d;
+  --good: #15915b;
+  --bad: #c23b52;
+  --teal: #0d9488;
+
+  /* Names the stylesheet already uses, mapped onto the palette above. */
+  --paper: var(--bg);
+  --paper-deep: #eef1f9;
+  --ink-soft: var(--muted);
+  --ink-faint: #767b8c;
+  --orange: var(--brand);
+  --orange-deep: var(--brand2);
   --white: #ffffff;
-  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
 }
 
@@ -81,7 +95,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--orange);
+  color: var(--green);
 }
 
 .hud-lives {
@@ -140,9 +154,9 @@ body {
   gap: 8px 14px;
   padding: 8px 18px;
   background: rgba(255, 255, 255, 0.94);
-  border: 1px solid #e2e0d8;
+  border: 1px solid var(--line);
   border-radius: 22px;
-  box-shadow: 0 14px 34px -22px rgba(30, 41, 59, 0.6);
+  box-shadow: 0 14px 34px -22px rgba(20, 10, 60, 0.6);
   font-size: 11px;
   color: var(--ink-soft);
   z-index: 5;
@@ -155,7 +169,7 @@ body {
   font-weight: 700;
   color: var(--ink);
   background: var(--paper);
-  border: 1px solid #e2e0d8;
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 3px 6px;
   cursor: pointer;
@@ -189,7 +203,7 @@ body {
   width: 32px;
   height: 18px;
   border-radius: 999px;
-  background: #d8d5cb;
+  background: #cfd5e6;
   transition: background 140ms ease;
   flex: none;
 }
@@ -202,7 +216,7 @@ body {
   height: 14px;
   border-radius: 50%;
   background: #ffffff;
-  box-shadow: 0 1px 2px rgba(30, 41, 59, 0.3);
+  box-shadow: 0 1px 2px rgba(20, 10, 60, 0.3);
   transition: transform 140ms ease;
 }
 
@@ -227,9 +241,9 @@ body {
   min-width: 230px;
   padding: 12px 20px 10px;
   background: rgba(255, 255, 255, 0.95);
-  border: 1px solid #e2e0d8;
+  border: 1px solid var(--line);
   border-radius: 16px;
-  box-shadow: 0 16px 36px -24px rgba(30, 41, 59, 0.55);
+  box-shadow: 0 16px 36px -24px rgba(20, 10, 60, 0.55);
   text-align: center;
   z-index: 6;
   pointer-events: none;
@@ -374,7 +388,7 @@ body {
   display: grid;
   place-items: center;
   padding: clamp(12px, 3vw, 32px);
-  background: rgba(243, 242, 238, 0.72);
+  background: rgba(22, 18, 38, 0.42);
   backdrop-filter: blur(3px);
 }
 
@@ -383,10 +397,15 @@ body {
   max-height: 100%;
   overflow: auto;
   background: var(--white);
-  border: 1px solid #e2e0d8;
+  border: 1px solid var(--line);
   border-radius: 20px;
-  box-shadow: 0 24px 60px -30px rgba(30, 41, 59, 0.45);
+  box-shadow: 0 24px 60px -30px rgba(20, 10, 60, 0.45);
   padding: clamp(18px, 3vw, 30px);
+}
+
+.brand {
+  padding-bottom: 14px;
+  border-bottom: 4px solid var(--lime);
 }
 
 .brand h1 {
@@ -398,7 +417,7 @@ body {
 }
 
 .brand h1 span {
-  color: var(--orange);
+  color: var(--green);
 }
 
 .brand p {
@@ -439,7 +458,7 @@ body {
   padding: 10px 12px;
   text-align: left;
   background: var(--white);
-  border: 2px solid #e6e4dc;
+  border: 2px solid var(--line);
   border-radius: 12px;
   cursor: pointer;
   font-family: inherit;
@@ -456,7 +475,7 @@ body {
 
 .tier[aria-selected="true"] {
   border-color: var(--orange);
-  background: #fff7ed;
+  background: #eef2fb;
 }
 
 .tier-top {
@@ -490,7 +509,7 @@ body {
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  border-top: 1px solid #efeee8;
+  border-top: 1px solid var(--line);
   padding-top: 14px;
 }
 
@@ -500,7 +519,7 @@ body {
   padding: 14px 16px;
   margin-bottom: 16px;
   background: var(--paper);
-  border: 1px solid #e6e4dc;
+  border: 1px solid var(--line);
   border-radius: 14px;
 }
 
@@ -561,7 +580,7 @@ body {
   letter-spacing: 0.04em;
   color: var(--ink);
   background: var(--paper);
-  border: 1px solid #e2e0d8;
+  border: 1px solid var(--line);
   border-radius: 999px;
   padding: 8px 14px;
   cursor: pointer;
@@ -599,7 +618,7 @@ kbd {
   font-weight: 700;
   color: var(--ink-soft);
   background: var(--paper);
-  border: 1px solid #e2e0d8;
+  border: 1px solid var(--line);
   border-bottom-width: 2px;
   border-radius: 5px;
   padding: 1px 5px;

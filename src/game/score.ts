@@ -1,10 +1,15 @@
 import { Beam, Dot, Formatter, Renderer, Stave, StaveNote, StaveTie, Voice } from "vexflow";
 import type { Game } from "./engine";
 import { PX_PER_BEAT, PRE_ROLL_BEATS, staffY } from "./layout";
-import { beamGroups, type EngravedNote } from "./rhythm";
+import {
+  beamGroups,
+  groupStemDirection,
+  stemDirection,
+  type EngravedNote,
+} from "./rhythm";
 import { WORLD } from "./world";
 
-const INK = "#1e293b";
+const INK = "#161226";
 const SPACE = 18;
 const SCALE = SPACE / 10;
 const PAD = 70;
@@ -60,6 +65,15 @@ function buildBar(game: Game, barIndex: number): HTMLCanvasElement {
   const topOffset = stave.getYForLine(0);
   const placed = new Stave(PAD / SCALE, staffY(8) / SCALE - topOffset, BAR_WIDTH / SCALE);
 
+  // Every note stems down from the B line upward; a beam takes one direction.
+  const groups = beamGroups(notes);
+  const directions = new Map<string, number>();
+  for (const note of notes) directions.set(note.key, stemDirection(note.step));
+  for (const group of groups) {
+    const direction = groupStemDirection(group);
+    for (const note of group) directions.set(note.key, direction);
+  }
+
   const vexNotes = notes.map((note) => {
     const { code, dotted } = durationFor(note.beats);
     const vexNote = new StaveNote({
@@ -67,6 +81,7 @@ function buildBar(game: Game, barIndex: number): HTMLCanvasElement {
       duration: code + (note.rest ? "r" : ""),
       clef: "treble",
     });
+    vexNote.setStemDirection(directions.get(note.key) ?? stemDirection(note.step));
     if (dotted) Dot.buildAndAttach([vexNote], { all: true });
     return vexNote;
   });
@@ -90,7 +105,7 @@ function buildBar(game: Game, barIndex: number): HTMLCanvasElement {
   const byKey = new Map<string, number>();
   notes.forEach((note, index) => byKey.set(note.key, index));
 
-  for (const group of beamGroups(notes)) {
+  for (const group of groups) {
     const stems = group
       .map((note) => byKey.get(note.key))
       .filter((index): index is number => index !== undefined)

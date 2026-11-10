@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Sound } from "../src/game/audio";
 import { Game } from "../src/game/engine";
-import { PX_PER_BEAT, staffY } from "../src/game/layout";
+import { birdPerchY, PX_PER_BEAT, staffY } from "../src/game/layout";
 import { TIMING } from "../src/game/scoring";
 import { tierById } from "../src/game/tiers";
 import type { NoteEvent } from "../src/game/types";
@@ -39,10 +39,12 @@ function tapAt(game: Game, beat: number): void {
 }
 
 describe("game", () => {
-  it("starts in the ready phase on the middle line", () => {
+  it("waits above the staff before the run starts", () => {
     const game = newGame();
     expect(game.phase).toBe("ready");
-    expect(game.bird.y).toBeCloseTo(staffY(4), 5);
+    expect(game.bird.y).toBeCloseTo(birdPerchY(4), 5);
+    // The flight band clears the top line.
+    expect(game.bird.y).toBeLessThan(staffY(8));
 
     game.start();
     expect(game.phase).toBe("running");
@@ -195,16 +197,34 @@ describe("game", () => {
     expect(game.accuracy).toBe(50);
   });
 
-  it("glides the bird toward the next note without any input", () => {
+  it("lands on the perch on the beat, not before", () => {
     const game = newGame();
     game.start();
     const first = playableNotes(game)[0];
-    const before = game.bird.y;
 
-    for (let i = 0; i < 20; i += 1) game.update(1 / 60);
+    // A fifth of a beat out the bird is still in the air.
+    while (game.beatsElapsed < first.beat - 0.2) game.update(1 / 60);
+    expect(Math.abs(game.bird.y - birdPerchY(first.step))).toBeGreaterThan(6);
 
-    expect(game.bird.y).not.toBe(before);
-    expect(Math.abs(game.bird.y - staffY(first.step))).toBeLessThan(Math.abs(before - staffY(first.step)));
+    // On the beat it is down on that note's perch.
+    while (game.beatsElapsed < first.beat) game.update(1 / 60);
+    expect(Math.abs(game.bird.y - birdPerchY(first.step))).toBeLessThan(4);
+  });
+
+  it("arcs above both perches between notes instead of gliding", () => {
+    const game = newGame();
+    game.start();
+    const [first, second] = playableNotes(game);
+
+    let peak = Number.POSITIVE_INFINITY;
+    while (game.beatsElapsed < second.beat) {
+      peak = Math.min(peak, game.bird.y);
+      game.update(1 / 60);
+    }
+
+    // A glide between two perches never rises above both of them.
+    const lowest = Math.max(birdPerchY(first.step), birdPerchY(second.step));
+    expect(peak).toBeLessThan(lowest - 8);
   });
 
   it("ramps the tempo every eight hits", () => {

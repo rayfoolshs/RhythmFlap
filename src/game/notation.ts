@@ -3,7 +3,7 @@ import { PX_PER_BEAT, PRE_ROLL_BEATS, staffY } from "./layout";
 import { drawScore } from "./score";
 import { WORLD } from "./world";
 
-const INK = "#1e293b";
+const INK = "#161226";
 const MUSIC_SIZE = 72;
 const MUSIC_FONT = '"Bravura", "Bravura Text", serif';
 
@@ -84,7 +84,7 @@ function drawCounts(ctx: CanvasRenderingContext2D, game: Game): void {
     ctx.font = onBeat
       ? "800 12px ui-sans-serif, system-ui, -apple-system, sans-serif"
       : "700 10px ui-sans-serif, system-ui, -apple-system, sans-serif";
-    ctx.fillStyle = onBeat ? "rgba(30, 41, 59, 0.62)" : "rgba(249, 115, 22, 0.72)";
+    ctx.fillStyle = onBeat ? "rgba(22, 18, 38, 0.62)" : "rgba(61, 74, 148, 0.78)";
     const label = onBeat ? String(beat) : syllable === "&" ? "+" : syllable;
     ctx.fillText(label, x, y);
   }
