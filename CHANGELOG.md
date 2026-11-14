@@ -7,6 +7,14 @@ dates are the commit dates of each release point.
 
 _Nothing yet._
 
+## 1.0.1 — 2026-11-14
+
+### Fixed
+
+- Restored the **"Created by Ray Foo"** credit under the menu tagline, with
+  links to [rayfooproductions.com](https://www.rayfooproductions.com). The React
+  port had dropped the line that existed in the 0.1.x vanilla build.
+
 ## 1.0.0 — 2026-11-14
 
 First public release, published to GitHub Pages at
