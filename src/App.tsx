@@ -864,6 +864,26 @@ export default function App() {
                 <p className="mt-1.5 text-sm text-[#4e5366]">
                   Sight-read each bar as it crosses the line. Hold sustained values and release before rests.
                 </p>
+                <p className="mt-2 text-xs text-[#6b6f80]">
+                  Created by{" "}
+                  <a
+                    href="https://www.rayfooproductions.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-semibold text-[#202b64] underline decoration-[#c1d52d] decoration-2 underline-offset-2 hover:text-[#0a8440]"
+                  >
+                    Ray Foo
+                  </a>
+                  {" · "}
+                  <a
+                    href="https://www.rayfooproductions.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[#202b64] underline decoration-[#c1d52d] decoration-2 underline-offset-2 hover:text-[#0a8440]"
+                  >
+                    www.rayfooproductions.com
+                  </a>
+                </p>
               </div>
               <div className="flex items-center gap-2 text-xs text-[#6b6f80]">
                 <span>Seed</span>
