@@ -1,0 +1,8 @@
+{
+  "name": "Rhythm Flap — Sight-Reading Trainer",
+  "description": "One-button sight-reading rhythm trainer with VexFlow notation, early/late millisecond diagnostics, multi-meter support, and Web MIDI input.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

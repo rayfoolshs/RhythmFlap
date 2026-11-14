@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+:root {
+  --paper: #f5f6fa;
+  --paper-deep: #eef1f9;
+  --white: #ffffff;
+  --ink: #161226;
+  --ink-soft: #4e5366;
+  --ink-faint: #6b6f80;
+  --line: #e2e5ee;
+  --navy: #202b64;
+  --navy-soft: #3d4a94;
+  --green: #0a8440;
+  --lime: #c1d52d;
+  --good: #15915b;
+  --teal: #0d9488;
+  --amber: #c97a08;
+  --bad: #c23b52;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.font-mono-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+input[type="range"] {
+  accent-color: var(--navy);
+}
+
+@keyframes gentlePulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-hint {
+  animation: gentlePulse 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hint {
+    animation: none;
+    opacity: 0.85;
+  }
+}
