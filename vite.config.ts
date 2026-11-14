@@ -5,6 +5,9 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
+    // GitHub Pages project sites are served from /<repo>/, so CI sets PAGES_BASE.
+    // Local dev and root deployments keep the default "/".
+    base: process.env.PAGES_BASE ?? '/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
