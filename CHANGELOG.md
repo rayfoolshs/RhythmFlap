@@ -130,11 +130,10 @@ design documents (`ARCHITECTURE.md`, `BUILD_PLAN.md`, `DECISIONS.md`,
 `TESTING.md`).
 
 That repository and its Pages site were **retired on 2026-11-14** in favour of
-this one. Its full history survives in a mirror bundle at:
+this one. Its full history — both commits, the vanilla implementation, the
+53-test Vitest suite and the design documents — was archived to a git bundle
+before deletion, recoverable with:
 
+```bash
+git clone rhythm-flap-backup.bundle rhythm-flap
 ```
-/private/var/folders/yh/x0d9b8w92gv545pdnrkg_9sw0000gn/T/opencode/rhythm-flap-backup.bundle
-```
-
-Restore with `git clone rhythm-flap-backup.bundle rhythm-flap`. That path is a
-temporary directory; copy the bundle somewhere durable to keep it permanently.
